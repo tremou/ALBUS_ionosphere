@@ -781,7 +781,7 @@ OUTPUTS: None
 
 #############################################################################
 
-def setup_AlbusIonosphere_for_ref_date(log, MSname="",MSdir=".",Lat=0, Long=0, Height=0,start_time="",end_time="", object="",time_step=300.0,telescope_pos=None,station_pos_x=0,station_pos_y=0,station_pos_z=0, max_dist=700E3, processing_option="MO_PIM",tolerance=0.1,overwrite=0,do_serial=0,raise_bias_error=0,num_processors=2,use_pim=1,use_global_data=0, gps_data_directory="."):
+def setup_AlbusIonosphere_for_ref_date(log, MSname="",MSdir=".",Lat=0, Long=0, Height=0,start_time="",end_time="", object="",time_step=300.0,telescope_pos=None,station_pos_x=0,station_pos_y=0,station_pos_z=0, max_dist=700E3, processing_option="MO_PIM",tolerance=0.1,overwrite=0,do_serial=0,raise_bias_error=0,num_processors=2,use_pim=1,use_global_data=0, gps_data_directory=".", output_data_directory="."):
 
 # Inputs:
 # MSname - name of Measurement Set (MS) to use
@@ -984,7 +984,7 @@ def setup_AlbusIonosphere_for_ref_date(log, MSname="",MSdir=".",Lat=0, Long=0, H
 
 # script to generate ionosphere corrections for CHIME
 
-def process_chime_ionosphere(Az=180.0, El=90.0, Lat=0, Long=0, Height=0,start_time="",end_time="", object="",time_step=300.0,telescope_pos=None,station_pos_x=0,station_pos_y=0,station_pos_z=0,processing_option="MO_PIM",tolerance=0.1,overwrite=0,do_serial=0,do_plot=0,raise_bias_error=0, max_dist=700E3, num_processors=2,use_pim=1,use_global_data=0,gps_data_directory="."):
+def process_chime_ionosphere(Az=180.0, El=90.0, Lat=0, Long=0, Height=0,start_time="",end_time="", object="",time_step=300.0,telescope_pos=None,station_pos_x=0,station_pos_y=0,station_pos_z=0,processing_option="MO_PIM",tolerance=0.1,overwrite=0,do_serial=0,do_plot=0,raise_bias_error=0, max_dist=700E3, num_processors=2,use_pim=1,use_global_data=0,gps_data_directory=".", output_data_directory="."):
 
 # Inputs:
 # Az     - azimuth, north through east. Default = derive from Ra and Dec for tracking interferometer 
@@ -1049,9 +1049,9 @@ def process_chime_ionosphere(Az=180.0, El=90.0, Lat=0, Long=0, Height=0,start_ti
 
     if os.path.exists(out_file):
       os.remove(out_file)
-    log = open(out_file, 'a')
+    log = open(output_data_directory+out_file, 'a')
 
-    MS,start_time,end_time, lat_set,Lat1,Long1,Ht1 = setup_AlbusIonosphere_for_ref_date(log,MSname,MSdir,Lat,Long,Height,start_time,end_time, object,time_step,telescope_pos,station_pos_x,station_pos_y,station_pos_z, max_dist, processing_option,tolerance,overwrite,do_serial,raise_bias_error,num_processors,use_pim,use_global_data, gps_data_directory)
+    MS,start_time,end_time, lat_set,Lat1,Long1,Ht1 = setup_AlbusIonosphere_for_ref_date(log,MSname,MSdir,Lat,Long,Height,start_time,end_time, object,time_step,telescope_pos,station_pos_x,station_pos_y,station_pos_z, max_dist, processing_option,tolerance,overwrite,do_serial,raise_bias_error,num_processors,use_pim,use_global_data, gps_data_directory,output_data_directory)
 # can we use more than two processors?
     if num_processors <= 2:
       try:
@@ -1414,6 +1414,7 @@ def process_ionosphere(MSname="",
                        use_pim=1,
                        use_global_data=0,
                        gps_data_directory=".",
+                       output_data_directory=".",
                        special_body=None):
 
 # Inputs:
@@ -1438,7 +1439,7 @@ def process_ionosphere(MSname="",
 # use_pim - 1 Use PIM model (default) in fit, 0: Use IRI model
 # use_global_data - 1: include data from global GNSS network, 0: ignore data from global network
 # gps_data_directory - directory where the GPS data is to be stored. Default = current one.
-
+#output_data_directory - directory where the output file is to be stored. Default=current one.
 # Lat - latitude of the observatory
 # Long - longitude of the observatory
 # Height - height of the observatory
@@ -1478,13 +1479,13 @@ def process_ionosphere(MSname="",
 
     if os.path.exists(out_file):
       os.remove(out_file)
-    log = open(out_file, 'a')
+    log = open(output_data_directory+out_file, 'a')
 
 # setting num_processors == 1 seems to work better for getting GPS data from
 # Geosciences Australia. Anyway most time for Australia data is spent at the
 # bias / clock correction fitting stuff
 
-    MS,start_time,end_time, lat_set,Lat1,Long1,Ht1 = setup_AlbusIonosphere_for_ref_date(log,MSname,MSdir,Lat,Long,Height,start_time,end_time, object,time_step,telescope_pos,station_pos_x,station_pos_y,station_pos_z,max_dist, processing_option,tolerance,overwrite,do_serial,raise_bias_error,num_processors,use_pim,use_global_data, gps_data_directory)
+    MS,start_time,end_time, lat_set,Lat1,Long1,Ht1 = setup_AlbusIonosphere_for_ref_date(log,MSname,MSdir,Lat,Long,Height,start_time,end_time, object,time_step,telescope_pos,station_pos_x,station_pos_y,station_pos_z,max_dist, processing_option,tolerance,overwrite,do_serial,raise_bias_error,num_processors,use_pim,use_global_data, gps_data_directory,output_data_directory)
 
 # can we use more than two processors for Ionosphere TEC / RM predictions?
     if num_processors <= 2:
@@ -1778,7 +1779,7 @@ def get_askap_beam_locations( filename ):
 # The following function should be the only one which needs changes that depend
 # on the type of observation that one is doing
 
-def process_ionosphere_multi_dir(MSname="",MSdir=".", Ra=0, Dec=0, Az=180.0, El=-90.0, Lat=0, Long=0, Height=0,start_time="",end_time="", object="iono",time_step=300.0,telescope_pos=None,station_pos_x=0,station_pos_y=0,station_pos_z=0,max_dist=350E3,processing_option="RI_G03",tolerance=0.1,overwrite=0,do_serial=0,raise_bias_error=0, num_processors=2,use_pim=1,use_global_data=0,gps_data_directory="./",positions_file=None):
+def process_ionosphere_multi_dir(MSname="",MSdir=".", Ra=0, Dec=0, Az=180.0, El=-90.0, Lat=0, Long=0, Height=0,start_time="",end_time="", object="iono",time_step=300.0,telescope_pos=None,station_pos_x=0,station_pos_y=0,station_pos_z=0,max_dist=350E3,processing_option="RI_G03",tolerance=0.1,overwrite=0,do_serial=0,raise_bias_error=0, num_processors=2,use_pim=1,use_global_data=0,gps_data_directory="./",output_data_directory="./", positions_file=None):
 
 # Inputs:
 # MSname - name of Measurement Set (MS) to use
@@ -1851,9 +1852,9 @@ def process_ionosphere_multi_dir(MSname="",MSdir=".", Ra=0, Dec=0, Az=180.0, El=
     if os.path.exists(out_file):
       os.remove(out_file)
 
-    log= open(out_file, 'w')
+    log= open(output_data_directory+out_file, 'w')
 
-    MS,start_time,end_time, lat_set,Lat1,Long1,Ht1 = setup_AlbusIonosphere_for_ref_date(log,MSname,MSdir,Lat,Long,Height,start_time,end_time, object,time_step,telescope_pos,station_pos_x,station_pos_y,station_pos_z,max_dist,processing_option,tolerance,overwrite,do_serial,raise_bias_error,num_processors,use_pim,use_global_data, gps_data_directory)
+    MS,start_time,end_time, lat_set,Lat1,Long1,Ht1 = setup_AlbusIonosphere_for_ref_date(log,MSname,MSdir,Lat,Long,Height,start_time,end_time, object,time_step,telescope_pos,station_pos_x,station_pos_y,station_pos_z,max_dist,processing_option,tolerance,overwrite,do_serial,raise_bias_error,num_processors,use_pim,use_global_data, gps_data_directory,output_data_directory)
 
     print (' ')
     print ('!!!!!!!!!!!!!!!!!!!!! finished setup_AlbusIonosphere_for_ref_date !!!!!!!!!!')
